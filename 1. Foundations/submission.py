@@ -32,7 +32,7 @@ def find_alphabetically_first_word(text: str) -> str:
     it is acceptable to either return an empty string or throw an error.
     """
     # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return min(text.split(' '))
     # END_YOUR_CODE
 
 
@@ -45,7 +45,7 @@ def euclidean_distance(loc1: Position, loc2: Position) -> float:
     are pairs of numbers (e.g., (3, 5)).
     """
     # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return (loc1 **2 + loc2 ** 2) ** 0.5
     # END_YOUR_CODE
 
 
@@ -74,7 +74,35 @@ def mutate_sentences(sentence: str) -> List[str]:
                 (Reordered versions of this list are allowed.)
     """
     # BEGIN_YOUR_CODE (our solution is 17 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+  
+    word_pairs = [(sentence[i], sentence[i+1]) for i in range(len(sentence)-1)]
+
+    cache, results = set(), list()
+
+    def build_sentence(word_seq, length):
+        if length == 0:
+          if len(word_seq) > 1:
+            results.append(' '.join(word_seq))
+          return
+        
+        for word in sentence:
+            if (word_seq[-1], word) in word_pairs:
+                new_branch = word_seq.copy()
+                new_branch.append(word)
+                sub_sentence = ' '.join(new_branch)
+                if sub_sentence not in cache:
+                    cache.add(sub_sentence)
+                    build_sentence(word_seq=new_branch, length=length-1)
+
+    length = len(sentence)
+    for word in sentence:
+        if word not in cache:
+            cache.add(word)
+            word_seq = list()
+            word_seq.append(word)
+            build_sentence(word_seq, length-1)
+         
+    return results
     # END_YOUR_CODE
 
 
@@ -127,3 +155,9 @@ def find_nonsingleton_words(text: str) -> Set[str]:
     # BEGIN_YOUR_CODE (our solution is 4 lines of code, but don't worry if you deviate from this)
     raise Exception("Not implemented yet")
     # END_YOUR_CODE
+
+
+if __name__ == '__main__':
+    sentence = input().split(' ')
+    mutations = mutate_sentences(sentence)
+    print(', '.join(mutations))
