@@ -77,12 +77,11 @@ def mutate_sentences(sentence: str) -> List[str]:
   
     word_pairs = [(sentence[i], sentence[i+1]) for i in range(len(sentence)-1)]
 
-    cache, results = set(), list()
+    cache, results, length = set(), list(), len(sentence)
 
     def build_sentence(word_seq, length):
         if length == 0:
-          if len(word_seq) > 1:
-            results.append(' '.join(word_seq))
+          if len(word_seq) > 1: results.append(' '.join(word_seq))
           return
         
         for word in sentence:
@@ -94,13 +93,10 @@ def mutate_sentences(sentence: str) -> List[str]:
                     cache.add(sub_sentence)
                     build_sentence(word_seq=new_branch, length=length-1)
 
-    length = len(sentence)
     for word in sentence:
         if word not in cache:
             cache.add(word)
-            word_seq = list()
-            word_seq.append(word)
-            build_sentence(word_seq, length-1)
+            build_sentence([word], length-1)
          
     return results
     # END_YOUR_CODE
@@ -120,7 +116,7 @@ def sparse_vector_dot_product(v1: SparseVector, v2: SparseVector) -> float:
     Note: A sparse vector has most of its entries as 0.
     """
     # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return sum([v1[key] * v2[key] for key in v1 if key in v2])
     # END_YOUR_CODE
 
 
@@ -139,7 +135,8 @@ def increment_sparse_vector(v1: SparseVector, scale: float, v2: SparseVector,
     This function will be useful later for linear classifiers!
     """
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    for key in v1: 
+        if key in v2: v1[key] += scale * v2[key]
     # END_YOUR_CODE
 
 
@@ -153,11 +150,7 @@ def find_nonsingleton_words(text: str) -> Set[str]:
     You might find it useful to use collections.defaultdict(int).
     """
     # BEGIN_YOUR_CODE (our solution is 4 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    from collections import Counter
+    word_counter = Counter(text)
+    return {key for key in word_counter if word_counter[key] > 1}
     # END_YOUR_CODE
-
-
-if __name__ == '__main__':
-    sentence = input().split(' ')
-    mutations = mutate_sentences(sentence)
-    print(', '.join(mutations))
