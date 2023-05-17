@@ -22,7 +22,7 @@ def extractWordFeatures(x):
     Example: "I am what I am" --> {'I': 2, 'am': 2, 'what': 1}
     """
     # BEGIN_YOUR_CODE (our solution is 4 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return dict(collections.Counter(x))
     # END_YOUR_CODE
 
 ############################################################
@@ -79,7 +79,10 @@ def extractCharacterFeatures(n):
     '''
     def extract(x):
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        y = ''.join(x.split(' '))
+        z = list()
+        for i in range (len(y)-n+1): z.append(y[i:i+n])
+        return dict(collections.Counter(z))
         # END_YOUR_CODE
     return extract
 
