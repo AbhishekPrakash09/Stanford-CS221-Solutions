@@ -43,7 +43,25 @@ def learnPredictor(trainExamples, testExamples, featureExtractor, numIters, eta)
     '''
     weights = {}  # feature => weight
     # BEGIN_YOUR_CODE (our solution is 12 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    #Initializing the weights with all the features
+    for x, y in trainExamples:
+        for feature in featureExtractor(x): weights[feature] = 0
+    
+    #Derivative of loss function for sparse vector x
+    def dsF(w, i):
+        x, y = trainExamples[i]
+        multplication_factor = 2 * (dotProduct(w, x) - y) 
+        derivative = {}
+        for element in x:
+            derivative[element] = x[element] * multplication_factor
+        return derivative
+    
+    def stochiastic_gradient_descent(dsF, n):
+        for i in range(n):
+            gradient = dsF(weights, i)
+            increment(weights, eta, gradient)
+                
+    stochiastic_gradient_descent(dsF, numIters)    
     # END_YOUR_CODE
     return weights
 
