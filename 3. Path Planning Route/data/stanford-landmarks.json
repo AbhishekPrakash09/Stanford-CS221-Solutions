@@ -1,0 +1,16 @@
+[
+  {"landmark": "gates", "geo": "37.43013785,-122.17353449841144"},
+  {"landmark": "bookstore", "geo": "37.42481495,-122.16870059390833"},
+  {"landmark": "oval", "geo": "37.430058200000005,-122.16941375966314"},
+  {"landmark": "memorial_church", "geo": "37.42693215,-122.17049867199401"},
+  {"landmark": "coupa_green_library", "amenity": "food", "geo": "37.426642799999996,-122.16684784932225"},
+  {"landmark": "hoover_tower", "geo": "37.427613050000005,-122.166995700418"},
+  {"landmark": "tressider", "amenity": "food", "geo": "37.4236765,-122.1706597"},
+  {"landmark": "cantor_arts_center", "amenity": "food", "geo": "37.4342962,-122.1743246"},
+  {"landmark": "AOERC", "geo": "37.4267383,-122.1774958685046"},
+  {"landmark": "lathrop_library", "geo": "37.4289321,-122.1738562"},
+  {"landmark": "green_library", "geo": "37.426642799999996,-122.16684784932225"},
+  {"landmark": "stanford_stadium", "amenity": "food", "geo": "37.43453005,-122.16116296732366"},
+  {"landmark": "rains", "geo": "37.42089785,-122.15822005474121"},
+  {"landmark": "evgr_a", "geo": "37.4245578,-122.1613084"}
+]

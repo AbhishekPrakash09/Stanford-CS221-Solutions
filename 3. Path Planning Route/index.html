@@ -1,0 +1,367 @@
+<head>
+  <title>Route Planning</title>
+  <script src="plugins/main.js"></script>
+  <script src="grader-all.js"></script>
+
+  <style type="text/css">
+    .nl { font-family:monospace; }
+  </style>
+</head>
+
+<body
+    onload="onLoad('route', '<a href=mailto:rishia@stanford.edu>Rishi Agarwal</a>', '04/08/2022', 'https://edstem.org/us/courses/38403/discussion/2960841')"
+>
+
+<div id="assignmentHeader"></div>
+
+<p><img src="stanford-map.png" alt="" width="80%"/></p>
+
+<p>
+  In route planning, the objective is to find the best way to get from point A to point B (think Google Maps).
+  In this homework, we will build on top of the classic shortest path problem to allow for more powerful queries. For
+  example, not only will you be able to explicitly ask for the shortest path from the Gates Building to Coupa Cafe at
+  Green Library, but you can ask for the shortest path from Gates back to your dorm, stopping by the package center,
+  gym, and the dining hall (in any order!) along the way.
+</p>
+
+<p>
+  We will assume that we have a <i>map</i> of a city (e.g., Stanford) consisting of a set of <i>locations</i>.
+  Each location has:
+  <ol>
+    <li>a unique label (e.g., 6608996258),</li>
+    <li>a (latitude, longitude) pair specifying where the location is (e.g., 37.4299866, -122.175519), and</li>
+    <li>a set of <i>tags</i> which describes the type of location (e.g., amenity=food).</li>
+  </ol>
+</p>
+
+<p>
+  There are a set of <i>connections</i> between pairs of locations; each connection has a <i>distance</i> (in meters),
+  and can be traversed in both directions (if the distance from A to B is 100 meters, then the distance from B to A is
+  also 100 meters).
+</p>
+
+<p>
+  There are two city maps that you'll be working with: a grid map (<code>createGridMap</code>) and a map of
+  Stanford (<code>createStanfordMap</code>), which is derived from
+  <a href="https://www.openstreetmap.org/" target="_blank">Open Street Maps</a>.
+  We have also included instructions on how to create your own maps in <code>README.md</code>.
+</p>
+
+<!------------------------------------------------------------>
+<div class="problemTitle">Problem 0: Grid City</div>
+
+<p>
+  Consider an infinite city consisting of locations $(x,y)$ where $x, y$ are integers.
+  From each location $(x,y)$, one can go east, west, north, or south.
+  You start at $(0,0)$ and want to go to $(m, n)$, where $m, n \geq 0$.
+  We can define the following search problem to capture this:
+  <ul>
+    <li>$s_\text{start} = (0,0)$</li>
+    <li>$\text{Actions}(s) = \{ (+1, 0), (-1, 0), (0, +1), (0, -1) \}$</li>
+    <li>$\text{Succ}(s, a) = s + a$</li>
+    <li>$\text{Cost}((x,y), a) = 1 + \max(x, 0)$ (it is more expensive as $x$ increases)</li>
+    <li>$\text{IsEnd}(s) = \mathbf{1}[s = (m,n)]$</li>
+  </ul>
+</p>
+
+<ol class="problem">
+
+<li class="writeup" id="0a">
+  What is the minimum cost of reaching location $(m,n)$ (note that $m,n \geq 0$) starting from location $(0,0)$ in the above city? Describe one possible path achieving the minimum cost.  Is it unique (i.e., are there multiple paths that achieve the minimum cost)?
+  <div class="expected">Provide an expression for the minimum cost. In addition, using 1 - 2 sentences describe one possible minimum cost path and state whether it is unique.</div>
+</li>
+
+<li class="writeup" id="0b">
+  How will Uniform Cost Search (UCS) behave on this problem? Mark the following as true or false:
+  <ol>
+    <li>UCS will never terminate because the number of states is infinite.</li>
+    <li>UCS will return the minimum cost path and explore only locations between $(0,0)$ and $(m,n)$; that is, $(x,y)$ such that $0 \le x \le m$ and $0 \le y \le n$.</li>
+    <li>UCS will return the minimum cost path and explore only locations whose past costs are less than the minimum cost from $(0,0)$ to $(m,n)$.</li>
+  </ol>
+  <div class="expected">T/F for each subpart.</div>
+</li>
+
+<li class="writeup" id="0c">
+  Now consider running UCS on an arbitrary graph. Mark the following as true or false:
+  <ol>
+    <li>If you add a connection between two locations, the minimum distance cannot go up.</li>
+    <li>If you make the cost of an action from some state small enough (possibly negative), that action will show up in the minimum cost path.</li>
+    <li>If you increase the cost of each action by 1, the minimum cost path does not change (even though its cost does).</li>
+  </ol>
+  <div class="expected">T/F for each subpart.</div>
+</li>
+
+</ol>
+
+<!------------------------------------------------------------>
+<div class="problemTitle">Problem 1: Finding Shortest Paths</div>
+
+<p>
+  We first start out with the problem of finding the shortest path from a <i>start location</i>
+  (e.g., the Gates Building) to some end location. In Google Maps, you can only specify a specific end location
+  (e.g., Coupa Cafe at Green Library).
+  <br/><br/>
+  In this problem, we want to give the user the flexibility of specifying <i>multiple</i> possible end
+  locations by specifying a set of "tags" (e.g., so you can say that you want to go to <i>any</i> place with food versus
+  a specific location like Tressider).
+</p>
+
+<ol class="problem">
+
+<li class="code" id="1a">
+    Implement <code>ShortestPathProblem</code> so that given a <code>startLocation</code> and <code>endTag</code>,
+    the minimum cost path corresponds to the shortest path from <code>startLocation</code> to <i>any</i> location that
+    has the <code>endTag</code>.
+  <p>
+    In particular, you need to implement <code>startState()</code>, <code>isEnd(state)</code>,
+    <code>successorsAndCosts(state)</code>.
+  </p>
+  <p>
+    Recall the separation between search problem (modeling) and search algorithm (inference).
+    You should focus on modeling (defining the <code>ShortestPathProblem</code>); the default search algorithm,
+    <code>UniformCostSearch</code> (UCS), is implemented for you in <code>util.py</code>.
+  </p>
+  <div class="expected">An implementation of the <code>ShortestPathProblem</code> class.</div>
+</li>
+
+<li class="writeup" id="1b">
+  Run <code>python mapUtil.py &gt; readableStanfordMap.txt</code> to write a (long-ish) file of the possible locations on
+  the Stanford map along with their tags.
+  Each tag is a <code>[key]=[value]</code>.  Here are some examples of keys:
+  <ul>
+    <li><code>landmark</code>: Hand-defined landmarks (from <code>data/stanford-landmarks.json</code>)</li>
+    <li><code>amenity</code>: Various amenity types (e.g., "park", "food")</li>
+    <li><code>parking</code>: Assorted parking options (e.g., "underground")</li>
+  </ul>
+
+  <p>
+    Choose a starting location and end tag (perhaps that's relevant to your daily life) and implement
+    <code>getStanfordShortestPathProblem()</code> to create a search problem. Then, run
+    <code>python grader.py 1b-custom</code> to generate <code>path.json</code>. Once generated, run
+    <code>python visualization.py</code> to visualize it (opens in browser).
+    Try different start locations and end tags.
+    Pick two settings corresponding to the following:
+    <ul>
+      <li>
+        A start location and end tag that produced new insight into traveling around campus.
+        Describe whether the system was useful.
+      </li>
+      <li>
+        A start location and end tag where the minimum cost path found isn't desirable.
+        Is this due to incorrect modeling assumptions?   Explain.
+      </li>
+    </ul>
+    You should feel free to add new landmarks and if you are not at Stanford, follow the instructions in the
+    <code>README.md</code> to use your own map and landmarks.
+  </p>
+  <div class="expected">
+    A screenshot of the visualization of your two solutions as well as i) one or more sentences describing something interesting you've learned
+    about traveling (around campus, or elsewhere) and ii) something incorrect about either the map or modeling assumptions (such a landmark being out of place, etc.).
+  </div>
+</li>
+
+<li class="writeup" id="1c">
+  Your system now allows anyone to find the shortest path between any pair of locations on campus. By shortening
+  their travel distance, it promises to optimize travel efficiency.
+
+  <p>
+    But now, what happens when a large fraction of the population start using your system to plan their routes?
+    In particular, what <i>negative externalities</i> might result from this system being widely deployed (see these
+    brief articles for inspiration:
+    <a href="https://www.universityofcalifornia.edu/news/why-traffic-apps-make-congestion-worse" target="_blank">
+      "Why Traffic Apps Make Congestion Worse,"
+    </a>
+    <a href="https://www.theatlantic.com/technology/archive/2018/03/mapping-apps-and-the-price-of-anarchy/555551/" target="_blank">
+      "The Perfect Selfishness of Mapping Apps"
+    </a>).
+  </p>
+  <p>
+    Discuss the impact of these externalities on users of your system and other people. Remember that problems
+    often arise from the mismatch between the real world and one's model of it.
+    How would you reduce this mismatch?
+  </p>
+  <div class="expected">
+    Provide 3-5 sentences describing at least two externalities (one for users and one for other people), and
+    what you could do to address these problems.
+  </div>
+</li>
+</ol>
+
+<!------------------------------------------------------------>
+<div class="problemTitle">Problem 2: Finding Shortest Paths with Unordered Waypoints</div>
+
+<p>
+  Let's introduce an even more powerful feature: unordered waypoints! In Google Maps, you can specify an ordered
+  sequence of waypoints that a path must go through – for example, going from point A to point X to point Y to point B,
+  where [X, Y] are "waypoints" (such as a gas station or a friend's house).
+</p>
+<p>
+  However, we want to consider the case where the waypoints are <i>unordered</i>: {X, Y}, so that both A &rarr; X &rarr; Y &rarr; B
+  and A &rarr; Y &rarr; X &rarr; B are allowed. Moreover, X, Y, and B are each specified by a tag like in Problem 1 (e.g.,
+  <code>amenity=food</code>).
+</p>
+<p>
+  This is a neat feature if you think about your day-to-day life; you might be on your way home after a long day, but
+  need to stop by the package center, Tressider to grab a bite of food, and the bookstore to buy some notebooks. Having
+  the ability to get a short, quick path that hits all these stops might be really convenient (rather than searching
+  over the various waypoint orderings yourself).
+</p>
+
+<ol class="problem">
+
+<li class="code" id="2a">
+  Implement <code>WaypointsShortestPathProblem</code> so that given a <code>startLocation</code>, set of
+  <code>waypointTags</code>, and an <code>endTag</code>, the minimum cost path corresponds to the shortest path from
+  <code>startLocation</code> to a location with the <code>endTag</code>, such that all of <code>waypointTags</code> are
+  covered by some location in the path.
+  <br/>
+  Note that a single location can be used to satisfy multiple tags.
+  <p>
+    Like in Problem 1, you need to implement <code>startState()</code>, <code>isEnd(state)</code>, and
+    <code>successorsAndCosts(state)</code>.
+  </p>
+  <p>
+    There are many ways to implement this search problem, so you should think carefully about how to design your
+    <code>State</code>. We want to optimize for a compact state space so that search is as efficient as possible.
+  </p>
+
+  <div class="expected">
+    An implementation of the <code>WaypointsShortestPathProblem</code> class. To get full credit, your implementation
+    must have the right asymptotic dependence on the number of locations and waypoints. Note that your code will
+    timeout if you do this incorrectly.
+  </div>
+</li>
+
+<li class="writeup" id="2b">
+  If there are $n$ locations and $k$ waypoint tags, what is the maximum number of states that UCS could visit?
+  <div class="expected">
+    A mathematical expression that depends on $n$ and $k$, with a brief explanation justifying it.
+  </div>
+</li>
+
+<li class="writeup" id="2c">
+  Choose a starting location, set of waypoint tags, and an end tag (perhaps that captures an interesting route planning
+  problem relevant to you), and implement <code>getStanfordWaypointsShortestPathProblem()</code> to create a
+  search problem. Then, similar to Problem 1b, run <code>python grader.py 2c-custom</code> to generate <code>path.json</code>.
+  Once generated, run <code>python visualization.py</code> to visualize it (opens in browser).
+  <div class="expected">
+    A screenshot of the visualized path with a list of the waypoint tags you selected. In addition, provide
+    one or more sentences describing unexpected or interesting features of the selected path.
+    Does it match your expectations? What does this path fail to capture that might be important?
+  </div>
+</li>
+
+<li class="writeup" id="2d">
+  Ride sharing companies use route finding systems similar to the one you built in this problem to route drivers. Such
+  companies have been criticized for using behavioral nudges in their driver-facing applications; for example, a
+  <a href="https://www.nytimes.com/interactive/2017/04/02/technology/uber-drivers-psychological-tricks.html" target="_blank">
+    New York Times article
+  </a>
+  reported how the app uses features such as “forward dispatch” (a feature that dispatches a new ride to a driver
+  before the current one ends) to constantly keep drivers busy. This makes it more difficult for drivers to take breaks.
+  <p>
+    How would you implement better labor practices for drivers, balancing company goals with the protection of driver
+    interests? How could your new unordered waypoints feature help? What waypoints would you include from one
+    drop-off location to the next pick-up location for drivers, and what information about drivers would you need to
+    determine appropriate waypoints?
+  </p>
+  <p>
+    Note that the unordered waypoints feature is an example of a <i>dual use</i> technology: what are some waypoints
+    that a company might use to increase its profits at the expense of driver health?
+  </p>
+  <div class="expected">
+    Provide 3-5 sentences describing waypoints to include, at least one dimension of drivers' identity that could inform
+    selection of waypoints, and a potential use of the unordered waypoints feature that would <i>not</i> be beneficial
+    for drivers.
+  </div>
+</li>
+</ol>
+
+<!------------------------------------------------------------>
+<div class="problemTitle">Problem 3: Speeding up Search with A*</div>
+
+<p>
+  In this problem, we will explore how to speed up search by reducing the number of
+  states that need to be expanded using various A* heuristics.
+</p>
+
+<ol class="problem">
+
+<li class="code" id="3a">
+    In this problem, you will implement A* to speed up the search. Recall that in class,
+    A* is just UCS with a different cost function (a new search problem), so we will
+    implement A* via a <i>reduction</i> to UCS.
+  <p>
+    In particular, you should implement <code>aStarReduction()</code>
+    which takes a search <code>problem</code> and a <code>heuristic</code> as input
+    and returns a new search problem.
+  </p>
+
+  <div class="expected">
+    An implementation of the <code>NewSearchProblem</code> class in the
+    <code>aStarReduction(problem, heuristic)</code> function. As in prior problems, you need to implement
+    <code>startState()</code>, <code>isEnd(state)</code>, and <code>successorsAndCosts(state)</code>.
+  </div>
+</li>
+
+<li class="code" id="3b">
+  We are now ready to speed up search by simply implementing various heuristics.
+  First, implement <code>StraightLineHeuristic</code> for Problem 1, which returns the
+  straight line distance from a state to any location with the end tag.
+  Note: you might want to precompute some things so that evaluating the heuristic is fast.
+
+  <div class="expected">
+    An implementation of the <code>StraightLineHeuristic</code> class.
+  </div>
+</li>
+
+<li class="code" id="3c">
+  Next, implement <code>NoWaypointsHeuristic</code> for Problem 2, which returns the minimum cost path from a state to
+  any location with the end tag but ignoring all the waypoints (essentially the solution to Problem 1, so you can
+  reuse that if you'd like). Note: you might want to precompute some things so that evaluating the heuristic is fast. 
+  Helpful comments are provided in the code.
+
+  <div class="expected">
+    An implementation of the <code>NoWaypointsHeuristic</code> class.
+  </div>
+
+</li>
+
+<li class="writeup" id="3d">
+  Recall that heuristics are most effective when they are equal to the future cost.
+  Consider a $n \times n$ grid map (<code>createGridMap</code>) where the start and end are at the opposite corners;
+  for $n = 10$, we would have <code>startLocation = "0,0"</code>, <code>endTag = "label=9,9"</code>.
+  <p>
+    Provide a concrete example of $n$ <code>waypointTags</code> so that running A* with
+    the <code>NoWaypointsHeuristic</code> results in the same running time complexity as solving the relaxed
+    shortest path problem.
+  </p>
+  <div class="expected">
+    An example of $n$ <code>waypointTags</code> that satisfies the constraints of the question.
+  </div>
+</li>
+</ol>
+
+<!------------------------------------------------------------>
+<div class="problemTitle">Submission</div>
+
+<p>
+    Submission is done on Gradescope.
+
+    <br>
+    <br>
+    <b>Written:</b> When submitting the written parts, make sure to select <b>all</b> the pages
+    that contain part of your answer for that problem, or else you will not get credit.
+    To double check after submission, you can click on each problem link on the right side, and it should show
+    the pages that are selected for that problem.
+    <br>
+    <br>
+    <b>Programming:</b> After you submit, the autograder will take a few minutes to run. Check back after
+    it runs to make sure that your submission succeeded. If your autograder crashes, you will receive a 0 on the
+    programming part of the assignment. Note: the only file to be submitted to Gradescope is <code>submission.py</code>.
+    <br>
+    <br>
+    More details can be found in the Submission section on the course website.
+</p>
+
+</body>
