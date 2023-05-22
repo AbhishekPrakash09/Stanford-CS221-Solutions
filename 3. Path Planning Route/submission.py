@@ -35,17 +35,26 @@ class ShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        return State(location=self.startLocation)
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        return self.endTag in self.cityMap.tags[state.location]
         # END_YOUR_CODE
 
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        result = []
+
+        if self.isEnd(state):
+            return result
+        
+        for next_location in self.cityMap.distances[state.location]:
+            distance = self.cityMap.distances[state.location][next_location]
+            result.append((state.location, State(location=next_location), distance))
+        
+        return result
         # END_YOUR_CODE
 
 
@@ -72,7 +81,8 @@ def getStanfordShortestPathProblem() -> ShortestPathProblem:
     # cityMap = createCustomMap("data/custom.pbf", "data/custom-landmarks".json")
 
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    startLocation = '65392049'
+    endTag = 'tactile_paving'
     # END_YOUR_CODE
     return ShortestPathProblem(startLocation, endTag, cityMap)
 
