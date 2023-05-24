@@ -35,7 +35,7 @@ class ShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        return State(location=self.startLocation)
+        return State(location=self.startLocation, memory=0.0)
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
@@ -82,7 +82,7 @@ def getStanfordShortestPathProblem() -> ShortestPathProblem:
 
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
     startLocation = '65392049'
-    endTag = 'tactile_paving'
+    endTag = 'tactile_paving=yes'
     # END_YOUR_CODE
     return ShortestPathProblem(startLocation, endTag, cityMap)
 
@@ -111,7 +111,10 @@ class WaypointsShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        state = State(location=self.startLocation)
+        # memory is a tuple of total cost and the remaining waypointTags
+        state.memory = (0.0, {x for x in range(len(self.waypointTags))})
+        return state
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
@@ -121,6 +124,8 @@ class WaypointsShortestPathProblem(SearchProblem):
 
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
         # BEGIN_YOUR_CODE (our solution is 17 lines of code, but don't worry if you deviate from this)
+        result = []
+
         raise Exception("Not implemented yet")
         # END_YOUR_CODE
 
