@@ -170,12 +170,12 @@ def aStarReduction(problem: SearchProblem, heuristic: Heuristic) -> SearchProble
     class NewSearchProblem(SearchProblem):
         def startState(self) -> State:
             # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-            raise Exception("Not implemented yet")
+            return problem.startState
             # END_YOUR_CODE
 
         def isEnd(self, state: State) -> bool:
             # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-            raise Exception("Not implemented yet")
+            return problem.isEnd(state)
             # END_YOUR_CODE
 
         def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
@@ -295,7 +295,7 @@ class NoWaypointsHeuristic(Heuristic):
         # the minimum cost path to each state in our state space.
         #   > Note that we're making a critical assumption here: costs are symmetric!
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        return ucs.pastCosts
         # END_YOUR_CODE
 
     def evaluate(self, state: State) -> float:
