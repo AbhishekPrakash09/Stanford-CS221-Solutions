@@ -109,17 +109,13 @@ class WaypointsShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        state = State(location=self.startLocation)
-        state.memory = self.waypointTags        
+        state = State(location=self.startLocation, memory=self.waypointTags)      
         return state
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
         # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
         if self.endTag in self.cityMap.tags[state.location]:
-            if len(state.memory) == 1:
-                way_point_tag = state.memory[0]
-                return way_point_tag in self.cityMap.tags[state.location]
             return not state.memory
         return False
         # END_YOUR_CODE
@@ -128,7 +124,21 @@ class WaypointsShortestPathProblem(SearchProblem):
         # BEGIN_YOUR_CODE (our solution is 17 lines of code, but don't worry if you deviate from this)
         result = []
 
-        raise Exception("Not implemented yet")
+        memory = state.memory
+        print(memory)
+        for next_location in self.cityMap.distances[state.location]:
+            distance = self.cityMap.distances[state.location][next_location]
+            
+            next_state_memory = list(memory)
+            for tag in state.memory:
+                if tag in self.cityMap.tags[state.location]:
+                    tag_index = next_state_memory.index(tag)
+                    next_state_memory.pop(tag_index)
+            next_state_memory = tuple(sorted(next_state_memory))
+            next_state = State(location=next_location, memory=next_state_memory)
+            result.append((next_location, next_state, distance))
+
+        return result
         # END_YOUR_CODE
 
 
@@ -315,12 +325,12 @@ class NoWaypointsHeuristic(Heuristic):
 
 
 if __name__ == '__main__':
-    shortest_path_problem = getStanfordShortestPathProblem()
+    shortest_path_problem = getStanfordWaypointsShortestPathProblem()
     print(shortest_path_problem.startState())
     print(shortest_path_problem.cityMap)
     ucs = UniformCostSearch(verbose=2)
-    reduced = aStarReduction(shortest_path_problem, StraightLineHeuristic(shortest_path_problem.endTag, shortest_path_problem.cityMap))
-    print(reduced.startState())
+    #reduced = aStarReduction(shortest_path_problem, StraightLineHeuristic(shortest_path_problem.endTag, shortest_path_problem.cityMap))
+    #print(reduced.startState())
     ucs.solve(shortest_path_problem)
     #ucs.solve(reduced)
     solution = ucs.actions
