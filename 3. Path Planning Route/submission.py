@@ -46,13 +46,10 @@ class ShortestPathProblem(SearchProblem):
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
         result = []
-
-        if self.isEnd(state):
-            return result
         
         for next_location in self.cityMap.distances[state.location]:
             distance = self.cityMap.distances[state.location][next_location]
-            result.append((state.location, State(location=next_location), distance))
+            result.append((next_location, State(location=next_location), distance))
         
         return result
         # END_YOUR_CODE
@@ -81,8 +78,9 @@ def getStanfordShortestPathProblem() -> ShortestPathProblem:
     # cityMap = createCustomMap("data/custom.pbf", "data/custom-landmarks".json")
 
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
-    startLocation = '65392049'
-    endTag = 'amenity=food'
+    #startLocation = '6318936856'
+    startLocation = '5831726923'
+    endTag = 'name=Governor\'s Corner'
     # END_YOUR_CODE
     return ShortestPathProblem(startLocation, endTag, cityMap)
 
@@ -112,14 +110,18 @@ class WaypointsShortestPathProblem(SearchProblem):
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
         state = State(location=self.startLocation)
-        # memory is a tuple of total cost and the remaining waypointTags
-        state.memory = (0.0, {x for x in range(len(self.waypointTags))})
+        state.memory = self.waypointTags        
         return state
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
         # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        if self.endTag in self.cityMap.tags[state.location]:
+            if len(state.memory) == 1:
+                way_point_tag = state.memory[0]
+                return way_point_tag in self.cityMap.tags[state.location]
+            return not state.memory
+        return False
         # END_YOUR_CODE
 
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
@@ -170,7 +172,7 @@ def aStarReduction(problem: SearchProblem, heuristic: Heuristic) -> SearchProble
     class NewSearchProblem(SearchProblem):
         def startState(self) -> State:
             # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-            return problem.startState
+            return problem.startState()
             # END_YOUR_CODE
 
         def isEnd(self, state: State) -> bool:
@@ -180,7 +182,15 @@ def aStarReduction(problem: SearchProblem, heuristic: Heuristic) -> SearchProble
 
         def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
             # BEGIN_YOUR_CODE (our solution is 8 lines of code, but don't worry if you deviate from this)
-            raise Exception("Not implemented yet")
+            result = []
+        
+            for next_location in problem.cityMap.distances[state.location]:
+                new_state = State(location=next_location)
+                past_cost = problem.cityMap.distances[state.location][next_location]
+                future_cost = heuristic.evaluate(new_state)
+                result.append((next_location, new_state, past_cost + future_cost))
+        
+            return result
             # END_YOUR_CODE
 
     return NewSearchProblem()
@@ -271,7 +281,7 @@ class NoWaypointsHeuristic(Heuristic):
                     return result
                 
                 if endTag in cityMap.tags[state.location]:
-                    end_tag_locations = [location for location, tags in city_map.tags.items() if tag in tags]
+                    end_tag_locations = [location for location, tags in cityMap.tags.items() if endTag in tags]
                     for next_location in end_tag_locations:
                         result.append((next_location, State(location=next_location), 0))
                 else: 
@@ -306,5 +316,16 @@ class NoWaypointsHeuristic(Heuristic):
 
 if __name__ == '__main__':
     shortest_path_problem = getStanfordShortestPathProblem()
-    ucs = UniformCostSearch(verbose=1)
+    print(shortest_path_problem.startState())
+    print(shortest_path_problem.cityMap)
+    ucs = UniformCostSearch(verbose=2)
+    reduced = aStarReduction(shortest_path_problem, StraightLineHeuristic(shortest_path_problem.endTag, shortest_path_problem.cityMap))
+    print(reduced.startState())
     ucs.solve(shortest_path_problem)
+    #ucs.solve(reduced)
+    solution = ucs.actions
+    from mapUtil import checkValid
+    is_valid = checkValid(path=solution, cityMap=shortest_path_problem.cityMap, 
+                          startLocation=shortest_path_problem.startLocation, 
+                          endTag=shortest_path_problem.endTag, waypointTags=[])
+    print(is_valid)

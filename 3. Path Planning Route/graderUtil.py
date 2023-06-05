@@ -105,10 +105,10 @@ class TimeoutFunction:
                 raise TimeoutFunctionException()
             return result
             # End modification for Windows here
-        signal.signal(signal.SIGALRM, self.handle_max_seconds)
-        signal.alarm(self.max_seconds + 1)
+        #signal.signal(signal.SIGALRM, self.handle_max_seconds)
+        #signal.alarm(self.max_seconds + 1)
         result = self.function(*args)
-        signal.alarm(0)
+        #signal.alarm(0)
         return result
 
 
@@ -235,14 +235,14 @@ class Grader:
         except KeyboardInterrupt:
             raise
         except MemoryError:
-            signal.alarm(0)
+            #signal.alarm(0)
             gc.collect()
             self.fail('Memory limit exceeded.')
         except TimeoutFunctionException:
-            signal.alarm(0)
+            #signal.alarm(0)
             self.fail('Time limit (%s seconds) exceeded.' % part.max_seconds)
         except Exception as e:
-            signal.alarm(0)
+            #signal.alarm(0)
             self.fail('Exception thrown: %s -- %s' % (str(type(e)), str(e)))
             self.print_exception()
         except SystemExit:
@@ -255,7 +255,7 @@ class Grader:
         part.seconds = (end_time - start_time).seconds
         ###### quick fix to pacman problem 4 ######
         if part.seconds > part.max_seconds:
-            signal.alarm(0)
+            #signal.alarm(0)
             self.fail('Time limit (%s seconds) exceeded.' % part.max_seconds)
         ###### quick fix to pacman problem 4 ######
         if part.is_hidden() and not self.useSolution:
