@@ -134,6 +134,7 @@ class WaypointsShortestPathProblem(SearchProblem):
                 if tag in self.cityMap.tags[state.location]:
                     tag_index = next_state_memory.index(tag)
                     next_state_memory.pop(tag_index)
+            distance += len(next_state_memory) * 50 # Assigning an arbitrary cost to each waypoint
             next_state_memory = tuple(sorted(next_state_memory))
             next_state = State(location=next_location, memory=next_state_memory)
             result.append((next_location, next_state, distance))
